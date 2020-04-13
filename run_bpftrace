@@ -1,0 +1,21 @@
+#!/bin/bash
+function help() {
+    cat <<EOFHELP
+    usage: $0 <path to beam> <filter size> [summerize]
+EOFHELP
+}
+
+if [ $# -lt 2 ];then
+    help
+    exit 1
+fi
+
+if [ "x"$3 == xsummerize ] ; then
+	SUMMERIZE=-DSUMMERIZE
+fi
+
+cat print_allocs.v3.bt \
+    | gcc -x c -E -DFILTERSIZE=$2 $SUMMERIZE -o - - \
+    | grep -v "^#" \
+    | sed -e "s;BINPATH;$1;" \
+    | sudo sh -c "bpftrace /dev/stdin"  

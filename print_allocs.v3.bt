@@ -1,0 +1,93 @@
+#define TAG_PRIMARY_IMMED1	0x3
+#define _TAG_PRIMARY_SIZE	2
+#define _TAG_IMMED1_MASK	0xF
+#define _TAG_IMMED1_PID		TAG_PRIMARY_IMMED1
+#define is_internal_pid(x)	(((x) & _TAG_IMMED1_MASK) == _TAG_IMMED1_PID)
+#define is_pid(x)		 is_internal_pid((x))
+
+struct common {
+    unsigned long long id;
+};
+
+struct process {
+    struct common common; /* *Need* to be first in struct */
+};
+
+struct eheapfac {
+    enum { FACTORY_CLOSED = 0,
+	   HALLOC,
+	   MESSAGE,
+	   HEAP_FRAG,
+	   STATIC,
+	   TMP
+    } mode;
+    struct process *p;
+};
+
+#ifndef SUMMERIZE
+#define ACTION(FUNNAME, PIDNR, SERNR, ALLOCSIZE) \
+    printf("%s pid <0.%lu.%lu> size %lu\n", FUNNAME, PIDNR, SERNR, ALLOCSIZE)
+#else
+#define ACTION(FUNNAME, PIDNR, SERNR, ALLOCSIZE) \
+    @pids[0,PIDNR,SERNR] += ALLOCSIZE
+#endif
+
+#ifndef FILTERSIZE
+#define FILTERSIZE 10000
+#endif
+#define PRINT_PID(FUNNAME, PID, SIZE)									    \
+    $size = SIZE;								    \
+    if ($size > FILTERSIZE) {								    \
+	if (is_internal_pid(PID->common.id)) {				    \
+	    $pidnr=(((PID->common.id & 0xffffffff) >> 4) & ~(1<<15));			    \
+	    $sernr=(((PID->common.id & 0xffffffff) >> 19) & ~(1<<15));			    \
+	    $dummy=(((PID->common.id & 0xffffffff) >> 19) & ~(1<<15));			    \
+	    ACTION(FUNNAME, $pidnr, $sernr, $size);								    \
+	} else {									    \
+	    printf("not a pid\n");							    \
+	}										    \
+    }											    \
+
+u:BINPATH:erts_schedule {
+	@p[tid] = arg1;
+}
+
+u:BINPATH:garbage_collect {
+    @in_gc[tid] = @p[tid];
+    delete(@p[tid]);
+}
+
+ur:BINPATH:garbage_collect {
+    @p[tid] = @in_gc[tid];
+    delete(@in_gc[tid]);
+}
+
+u:BINPATH:erts_alcu_realloc {
+    @sizee[tid] = arg3;
+}
+
+ur:BINPATH:erts_alcu_realloc /@p[tid]/ {
+    $pid = ((struct process *) @p[tid]);
+    PRINT_PID("erts_alcu_realloc", $pid, @sizee[tid])
+    delete(@sizee[tid]);
+}
+ur:BINPATH:erts_alcu_realloc {
+    delete(@sizee[tid]);
+}
+u:BINPATH:erts_alcu_alloc_thr_spec {
+	@sizee[tid] = arg2;
+}
+ur:BINPATH:erts_alcu_alloc_thr_spec /@p[tid]/ {
+    $pid = ((struct process *) @p[tid]);
+    PRINT_PID("erts_alcu_alloc_thr_spec", $pid, @sizee[tid])
+    delete(@sizee[tid]);
+}
+u:BINPATH:erts_alcu_alloc_thr_pref {
+	@sizee[tid] = arg2;
+}
+ur:BINPATH:erts_alcu_alloc_thr_pref /@p[tid]/ {
+    $pid = ((struct process *) @p[tid]);
+    PRINT_PID("erts_alcu_alloc_thr_pref", $pid, @sizee[tid])
+    delete(@sizee[tid]);
+}
+
