@@ -1,8 +1,9 @@
-<pre>
+
+```
 $ ./run_bpftrace
     usage: ./run_bpftrace <path to beam> <filter size> [summerize]
-
-
+```
+<pre>
 
 Erlang/OTP 23 [RELEASE CANDIDATE 1] [erts-10.7] [source-ad99dde400] [64-bit] [smp:8:8] [ds:8:8:10] [async-threads:1] [hipe]
 
