@@ -1,3 +1,4 @@
+<pre>
 $ ./run_bpftrace
     usage: ./run_bpftrace <path to beam> <filter size> [summerize]
 
@@ -77,3 +78,5 @@ erts_alcu_alloc_thr_pref pid <0.60.0> size 302233599
 
 $ ls -l /home/jonas/Downloads/bigfile 
 -rw-rw-r--. 1 jonas jonas 302233568 Feb 18 22:17 /home/jonas/Downloads/bigfile
+
+</pre>
