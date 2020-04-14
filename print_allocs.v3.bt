@@ -35,21 +35,21 @@ struct eheapfac {
 #ifndef FILTERSIZE
 #define FILTERSIZE 10000
 #endif
-#define PRINT_PID(FUNNAME, PID, SIZE)									    \
-    $size = SIZE;								    \
+#define PRINT_PID(FUNNAME, PID, SIZE)							    \
+    $size = SIZE;									    \
     if ($size > FILTERSIZE) {								    \
-	if (is_internal_pid(PID->common.id)) {				    \
+	if (is_internal_pid(PID->common.id)) {						    \
 	    $pidnr=(((PID->common.id & 0xffffffff) >> 4) & ~(1<<15));			    \
-	    $sernr=(((PID->common.id & 0xffffffff) >> 19) & ~(1<<15));			    \
-	    $dummy=(((PID->common.id & 0xffffffff) >> 19) & ~(1<<15));			    \
-	    ACTION(FUNNAME, $pidnr, $sernr, $size);								    \
+	    $sernr=(((PID->common.id & 0xffffffff) >> 19) & ~(1<<13));			    \
+	    $dummy=(((PID->common.id & 0xffffffff) >> 19) & ~(1<<13));			    \
+	    ACTION(FUNNAME, $pidnr, $sernr, $size);					    \
 	} else {									    \
 	    printf("not a pid\n");							    \
 	}										    \
     }											    \
 
 u:BINPATH:erts_schedule {
-	@p[tid] = arg1;
+    @p[tid] = arg1;
 }
 
 u:BINPATH:garbage_collect {
@@ -75,7 +75,7 @@ ur:BINPATH:erts_alcu_realloc {
     delete(@sizee[tid]);
 }
 u:BINPATH:erts_alcu_alloc_thr_spec {
-	@sizee[tid] = arg2;
+    @sizee[tid] = arg2;
 }
 ur:BINPATH:erts_alcu_alloc_thr_spec /@p[tid]/ {
     $pid = ((struct process *) @p[tid]);
@@ -83,7 +83,7 @@ ur:BINPATH:erts_alcu_alloc_thr_spec /@p[tid]/ {
     delete(@sizee[tid]);
 }
 u:BINPATH:erts_alcu_alloc_thr_pref {
-	@sizee[tid] = arg2;
+    @sizee[tid] = arg2;
 }
 ur:BINPATH:erts_alcu_alloc_thr_pref /@p[tid]/ {
     $pid = ((struct process *) @p[tid]);
