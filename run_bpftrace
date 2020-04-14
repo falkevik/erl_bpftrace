@@ -11,7 +11,7 @@ if [ $# -lt 2 ];then
 fi
 
 if [ "x"$3 == xsummerize ] ; then
-	SUMMERIZE=-DSUMMERIZE
+    SUMMERIZE=-DSUMMERIZE
 fi
 
 cat print_allocs.v3.bt \
