@@ -48,8 +48,8 @@ struct eheapfac {
 	}										    \
     }											    \
 
-u:BINPATH:erts_schedule {
-    @p[tid] = arg1;
+ur:BINPATH:erts_schedule {
+    @p[tid] = retval;
 }
 
 u:BINPATH:garbage_collect {
